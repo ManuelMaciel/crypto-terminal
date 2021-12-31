@@ -37,7 +37,7 @@ const getValidTop = (top) => {
 const { version } = require('../package.json')
 program
   .version(version)
-  .option('-f, --search [symbol]', 'Busca los datos de una moneda especifica con su simbolo (puede haber separacion por comas)', list, [])
+  .option('-s, --search [symbol]', 'Busca los datos de una moneda especifica con su simbolo (puede haber separacion por comas)', list, [])
   .option('-t, --top [index]', 'Muestra el ranked top de las monedas del 1 - [index] segun la capitalizacion del mercado', validation.validateNumber, DEFAULT_TOP)
   .parse(process.argv)
 
@@ -55,6 +55,7 @@ const defaultHeader = [
   'Capitalizacion',
   'Suministro',
   'Volumen 24H',
+  'URL',
 ].map(title => title.yellow)
 const defaultColumns = defaultHeader.map((item, index) => index)
 const columns = defaultColumns
@@ -87,6 +88,7 @@ const sourceUrl = `https://api.coincap.io/v2/assets?limit=${top}`
 axios.get(sourceUrl)
   .then((response) => {
     // spinner.stop()
+    console.log(response.data.data)
     response.data.data
       .filter(record => {
         if (find.length > 0) {
@@ -105,6 +107,7 @@ axios.get(sourceUrl)
           market_cap: record.marketCapUsd ? +record.marketCapUsd : 0,
           percent_change_24h: record.changePercent24Hr ? +record.changePercent24Hr : 0,
           volume: record.volumeUsd24Hr ? +record.volumeUsd24Hr : 0,
+          url: record.explorer ?? '-'
         }
         return editedRecord
       })
