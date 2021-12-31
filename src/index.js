@@ -81,3 +81,58 @@ const table = new Table({
   },
   head: header
 })
+
+const spinner = ora('Loading data').start()
+
+const sourceUrl = `https://api.coincap.io/v2/assets?limit=${top}`
+axios.get(sourceUrl)
+  .then((response) => {
+    spinner.stop()
+    response.data.data
+      .filter(record => {
+        if (find.length > 0) {
+          return find.some(keyword => record.symbol.toLowerCase() === keyword.toLowerCase())
+        }
+        return true
+      })
+      .map(record => {
+        const editedRecord = {
+          name: record.name,
+          symbol: record.symbol,
+          rank: record.rank ? +record.rank : 0,
+          price: record.priceUsd ? +record.priceUsd : 0,
+          market_cap: record.marketCapUsd ? +record.marketCap : 0,
+          supply: record.supply ? +record.supply : 0,
+          market_cap: record.marketCapUsd ? +record.marketCapUsd : 0,
+          percent_change_24h: record.changePercent24Hr ? +record.changePercent24Hr : 0,
+          volume: record.volumeUsd24Hr ? +record.volumeUsd24Hr : 0,
+        }
+        return editedRecord
+      })
+      .map(record => {
+        const defaultValues = [
+          record.rank,
+          record.symbol,
+          record.price.toFixed(4),
+          getColoredChangeValueText(record.percent_change_24h.toFixed(2)),
+          formatNumber(record.market_cap),
+          formatNumber(record.supply),
+          formatNumber(record.volume),
+        ]
+        const values = sortedColumns
+          .map(index => defaultValues[index])
+        return values
+      })
+      .forEach(record => table.push(record))
+    if (table.length === 0) {
+      console.log('No hemos podido encontrar monedas que coincidan el simbolo'.red)
+    } else {
+      console.log(`Datos de coincap.io en ${new Date().toLocaleTimeString()}`)
+      console.log(table.toString())
+    }
+  })
+  .catch(function (error) {
+    console.log('error', error)
+    spinner.stop()
+    console.error('Hubo un error, intentelo mas tarde'.red)
+  })
