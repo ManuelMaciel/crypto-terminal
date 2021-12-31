@@ -1,7 +1,6 @@
 
 const program = require('commander')
 const axios = require('axios')
-const ora = require('ora')
 const Table = require('cli-table3')
 const colors = require('colors')
 const validation = require('./validation.js')
@@ -44,7 +43,7 @@ program
 
 console.log('\n')
 
-const find = program.find
+const find = program.search
 const top = find.length > 0 ? MAX_TOP : getValidTop(program.top)
 
 // handle table
@@ -82,12 +81,12 @@ const table = new Table({
   head: header
 })
 
-const spinner = ora('Loading data').start()
+// const spinner = ora('Loading data').start()
 
 const sourceUrl = `https://api.coincap.io/v2/assets?limit=${top}`
 axios.get(sourceUrl)
   .then((response) => {
-    spinner.stop()
+    // spinner.stop()
     response.data.data
       .filter(record => {
         if (find.length > 0) {
@@ -133,6 +132,6 @@ axios.get(sourceUrl)
   })
   .catch(function (error) {
     console.log('error', error)
-    spinner.stop()
+    // spinner.stop()
     console.error('Hubo un error, intentelo mas tarde'.red)
   })
